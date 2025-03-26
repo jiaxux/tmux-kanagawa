@@ -46,10 +46,10 @@ main()
   RATE=$(get_tmux_option "@kanagawa-refresh-rate" 5)
 
   if command -v nvidia-smi >/dev/null 2>&1; then
-    type=$(nvidia-smi --query-gpu=name --format=csv,noheader | sed -E 's/.*?(RTX|GTX|RX|R9|R7|R5|HD|Arc|UHD|Iris|HD Graphics) ([0-9]+[A-Za-z0-9]*).*/\1 \2/' | xargs)
+    type=$(nvidia-smi --query-gpu=name --format=csv,noheader | sed -E 's/.*?(RTX|GTX|RX|R9|R7|R5|HD|Arc|UHD|Iris|HD Graphics) ([0-9]+[A-Za-z0-9]*).*/\1 \2/' | tail -n1 | xargs)
     name="GPU ($type)"
   elif installed "glxinfo"; then
-    type=$(glxinfo | grep -e OpenGL.renderer | cut -d':' -f2 | sed -E 's/.*?(RTX|GTX|RX|R9|R7|R5|HD|Arc|UHD|Iris|HD Graphics) ([0-9]+[A-Za-z0-9]*).*/\1 \2/' | xargs)
+    type=$(glxinfo | grep -e OpenGL.renderer | cut -d':' -f2 | sed -E 's/.*?(RTX|GTX|RX|R9|R7|R5|HD|Arc|UHD|Iris|HD Graphics) ([0-9]+[A-Za-z0-9]*).*/\1 \2/' | tail -n1 | xargs)
     name="GPU ($type)"
   else
     name="GPU"
