@@ -9,8 +9,14 @@ get_platform()
 {
   case $(uname -s) in
     Linux)
-      gpu=$(glxinfo | grep -e OpenGL.renderer | awk '{print $4}')
-      echo $gpu
+      if command -v nvidia-smi >/dev/null 2>&1; then
+        echo "NVIDIA"
+      elif command -v glxinfo >/dev/null 2>&1; then
+        gpu=$(glxinfo | grep -e OpenGL.renderer | awk '{print $4}')
+        echo $gpu
+      else
+        echo "unknown"
+      fi
       ;;
 
     Darwin)
@@ -38,11 +44,15 @@ main()
 {
   # storing the refresh rate in the variable RATE, default is 5
   RATE=$(get_tmux_option "@kanagawa-refresh-rate" 5)
-  name="GPU"
 
-  if installed "glxinfo"; then
+  if command -v nvidia-smi >/dev/null 2>&1; then
+    type=$(nvidia-smi --query-gpu=name --format=csv,noheader | sed -E 's/.*?(RTX|GTX|RX|R9|R7|R5|HD|Arc|UHD|Iris|HD Graphics) ([0-9]+[A-Za-z0-9]*).*/\1 \2/' | xargs)
+    name="GPU ($type)"
+  elif installed "glxinfo"; then
     type=$(glxinfo | grep -e OpenGL.renderer | cut -d':' -f2 | sed -E 's/.*?(RTX|GTX|RX|R9|R7|R5|HD|Arc|UHD|Iris|HD Graphics) ([0-9]+[A-Za-z0-9]*).*/\1 \2/' | xargs)
     name="GPU ($type)"
+  else
+    name="GPU"
   fi
 
   gpu_label=$(get_tmux_option "@kanagawa-gpu-usage-label" "$name")
